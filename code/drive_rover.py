@@ -48,20 +48,25 @@ class RoverState():
         self.vel = None # Current velocity
         self.steer = 0 # Current steering angle
         self.throttle = 0 # Current throttle value
+        self.des_vel = 0 # Desired velocity
         self.brake = 0 # Current brake value
         self.nav_angles = None # Angles of navigable terrain pixels
         self.nav_dists = None # Distances of navigable terrain pixels
         self.ground_truth = ground_truth_3d # Ground truth worldmap
         self.mode = 'forward' # Current mode (can be forward or stop)
-        self.throttle_set = 0.2 # Throttle setting when accelerating
+        self.throttle_set = 0.5 # Throttle setting when accelerating
         self.brake_set = 10 # Brake setting when braking
         # The stop_forward and go_forward fields below represent total count
         # of navigable terrain pixels.  This is a very crude form of knowing
         # when you can keep going and when you should stop.  Feel free to
         # get creative in adding new fields or modifying these!
-        self.stop_forward = 50 # Threshold to initiate stopping
-        self.go_forward = 500 # Threshold to go forward again
+        self.stop_forward = 1000 # Threshold to initiate stopping
+        self.go_forward = 1500 # Threshold to go forward again
         self.max_vel = 2 # Maximum velocity (meters/second)
+
+        self.min_front_dist = 1 # Minimum distance in front, before stop, and back up
+        self.front_dist = None
+
         # Image output from perception step
         # Update this image to display your intermediate analysis steps
         # on screen in autonomous mode
@@ -70,6 +75,8 @@ class RoverState():
         # Update this image with the positions of navigable terrain
         # obstacles and rock samples
         self.worldmap = np.zeros((200, 200, 3), dtype=np.float) 
+        self.worldmap_sum = np.zeros((200, 200, 3)).astype(np.float)
+        self.worldmap_path = np.zeros((200,200,3)).astype(np.float) # Track where the robot has been
         self.samples_pos = None # To store the actual sample positions
         self.samples_to_find = 0 # To store the initial count of samples
         self.samples_located = 0 # To store number of samples located on map
@@ -77,6 +84,17 @@ class RoverState():
         self.near_sample = 0 # Will be set to telemetry value data["near_sample"]
         self.picking_up = 0 # Will be set to telemetry value data["picking_up"]
         self.send_pickup = False # Set to True to trigger rock pickup
+
+
+    def setTSB(self, throttle, steer, brake):
+        """
+        Set the Throttle, Steer, and Brake
+        """
+        self.throttle = throttle
+        self.steer = steer
+        self.brake = brake
+
+
 # Initialize our rover 
 Rover = RoverState()
 
