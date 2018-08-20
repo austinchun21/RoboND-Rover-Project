@@ -10,8 +10,8 @@ scale = 10
 
 # Create gradient blurrer
 cir = np.zeros((tile_size, tile_size, 3), dtype=float)
-cv2.circle(cir,(cir.shape[1]//2,cir.shape[0]//2), 10, color=(1,1,1), thickness=-1)
-cir = cv2.blur(cir, (10,10))#(20,20))
+cv2.circle(cir,(cir.shape[1]//2,cir.shape[0]//2), 15, color=(1,1,1), thickness=-1)
+cir = cv2.blur(cir, (20,20))#(20,20))
 
 
 def perspect_transform(img, src, dst):
@@ -32,7 +32,7 @@ def perspect_transform(img, src, dst):
     return warped
 
 
-def color_thresh(img, nav_hi=(256,70,256),nav_lo=(0,0,170),
+def color_thresh(img, nav_hi=(256,70,256),nav_lo=(0,0,160),
                       obs_hi=(256,256,90),obs_lo=(0,0,0),
                       rock_hi=(40,256,256),rock_lo=(25,140,120) ):
     """
@@ -119,6 +119,32 @@ def rover_coords(color_sel):
     
     return xnav_pix, ynav_pix, xobs_pix, yobs_pix, xrock_pix, yrock_pix
 
+def get_front_dist(obsx, obsy, scale):
+    """
+    Return distance to closest obstacle in front of Rover
+    Considers 1.2 meter wide channel in front of rover.
+    Takes the minimum obstacle distance.
+
+    """
+    front_inds = (obsy < 5) & (obsy > -5)
+    if(np.any(front_inds)):
+        front_dist = np.min(obsx[front_inds]) / scale
+        return front_dist
+    else:
+        return 16 # Max 16 meters view
+
+def get_right_dist(ang_nav, dist_nav, scale):
+    """
+    Return right distance along right diagonal (~45 degrees)
+    """ 
+    right_inds = ang_nav < np.deg2rad(-45)
+
+    if(np.any(right_inds)):
+        mean_right_dist = np.mean(dist_nav[right_inds]) / scale # Account for pixel scale
+        return mean_right_dist 
+    else:
+        print("No navigable terrain to the right!")
+        return 0
 
 def to_polar_coords(x_pixel, y_pixel):
     """
@@ -184,7 +210,7 @@ def pix_to_world(navx, navy, obsx, obsy, rockx, rocky, xpos, ypos, yaw, scale, t
     # Create tile (custom, hard-coded weights for classifications)
     tile = np.zeros((tile_size, tile_size, 3),dtype=np.uint8)
     tile[ny,nx,2] = 10
-    tile[oy,ox,0] = 10
+    tile[oy,ox,0] = 4
     tile[ry,rx,1] = 255 # Don't see rocks often, so weight it higher to not miss it
 
     return tile
@@ -273,9 +299,9 @@ def update_worldmap(worldmap, worldmap_sum, tile, xpos, ypos, roll, pitch):
     for i in range(len(indx)):
         yi, xi = indy[i], indx[i]
         chan = np.argmax(worldmap_sum[yi,xi])
-        if(worldmap_sum[yi,xi,chan] > min_conf_thresh):
-            worldmap[yi,xi] = (0,0,0)
-            worldmap[yi,xi,chan] = 255
+        # if(worldmap_sum[yi,xi,chan] > min_conf_thresh):
+        worldmap[yi,xi] = (0,0,0)
+        worldmap[yi,xi,chan] = 255
     
     return worldmap
 
@@ -327,7 +353,15 @@ def perception_step(Rover):
     navx, navy, obsx, obsy, rockx, rocky = rover_coords(col_sel)
     Rover.nav_dists, Rover.nav_angles = to_polar_coords(navx, navy)
 
-    # mean_dir = np.mean(ang_nav)
+    # Only update dists if driving flat
+    # if( (abs(Rover.roll-180) > 178.5) ):
+    if (abs(Rover.pitch-180) > 179 ):
+        Rover.front_dist = get_front_dist(obsx, obsy, scale)
+        Rover.right_dist = get_right_dist(Rover.nav_angles, Rover.nav_dists, scale)
+
+    print("Front Dist: %.2f"%Rover.front_dist)
+    print("Right Dist: %.2f"%Rover.right_dist)
+
 
     # Extract world coordinates of navigable, obstacle, and rock
     tile = pix_to_world(navx, navy, obsx, obsy, rockx, rocky, xpos, ypos, yaw, scale, tile_size)
