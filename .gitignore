@@ -1,2 +1,5 @@
 *.jpg
-
+*.pyc
+test_dataset/*
+*.avi
+*.mp4
