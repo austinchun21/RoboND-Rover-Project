@@ -25,6 +25,7 @@
 [image1]: ./misc/rover_image.jpg
 [image2]: ./calibration_images/example_grid1.jpg
 [image3]: ./calibration_images/example_rock1.jpg 
+[image4]: ./writeup_images/color_thresh.jpg
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/916/view) Points
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
@@ -38,8 +39,14 @@ You're reading it!
 
 ### Notebook Analysis
 #### 1. Run the functions provided in the notebook on test images (first with the test data provided, next on data you have recorded). Add/modify functions to allow for color selection of obstacles and rock samples.
-Here is an example of how to include an image in your writeup.
 
+To detect obstacles and rocks, I added more functionality to the `color_thresh()` function. Instead of taking just navigation threshold values and outputting a 1 channel binary image of the input image, `color_thresh()` now takes in threshold values for Obstacles and Rocks, and outputs a 3 channel binary image.
+I also decided to use color thresholding using HSV rather than RGB. I used a low and high threshold for the HSV ranges. By specifying ranges of HSV for each class (Obs, Rock, and Nav) left some pixels unclassified (that is why there are black regions between the Red and Blue). I was relatively conservative with the color thresholding for higher confidence in the classifications. 
+
+![color_thresh()][image4]
+
+
+Here is an example of how to include an image in your writeup.
 ![alt text][image1]
 
 #### 1. Populate the `process_image()` function with the appropriate analysis steps to map pixels identifying navigable terrain, obstacles and rock samples into a worldmap.  Run `process_image()` on your test data using the `moviepy` functions provided to create video output of your result. 
