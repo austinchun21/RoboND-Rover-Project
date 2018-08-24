@@ -22,10 +22,9 @@
 
 [//]: # (Image References)
 
-[image1]: ./misc/rover_image.jpg
+[image1]: ./writeup_images/color_thresh.jpg
 [image2]: ./calibration_images/example_grid1.jpg
 [image3]: ./calibration_images/example_rock1.jpg 
-[image4]: ./writeup_images/color_thresh.jpg
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/916/view) Points
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
@@ -41,18 +40,21 @@ You're reading it!
 #### 1. Run the functions provided in the notebook on test images (first with the test data provided, next on data you have recorded). Add/modify functions to allow for color selection of obstacles and rock samples.
 
 To detect obstacles and rocks, I added more functionality to the `color_thresh()` function. Instead of taking just navigation threshold values and outputting a 1 channel binary image of the input image, `color_thresh()` now takes in threshold values for Obstacles and Rocks, and outputs a 3 channel binary image.
+
 I also decided to use color thresholding using HSV rather than RGB. I used a low and high threshold for the HSV ranges. By specifying ranges of HSV for each class (Obs, Rock, and Nav) left some pixels unclassified (that is why there are black regions between the Red and Blue). I was relatively conservative with the color thresholding for higher confidence in the classifications. 
 
-![color_thresh()][image4]
+In the below figure, you can see the original image on the left, and the thresholded image in the middle. The navigable terrain is clearly colored as blue, the rock in the distance is identified as green, and the rock walls are colored red. Note that the sky is unclassified, and the tread marks on the ground are unclassified.
 
+![color_thresh()][image1]
 
-Here is an example of how to include an image in your writeup.
-![alt text][image1]
 
 #### 1. Populate the `process_image()` function with the appropriate analysis steps to map pixels identifying navigable terrain, obstacles and rock samples into a worldmap.  Run `process_image()` on your test data using the `moviepy` functions provided to create video output of your result. 
-And another! 
 
-![alt text][image2]
+I adjusted all of the `rover_coords()` and `pix_to_world` to process the the obstalce and rock pixels just as the navigable pixels. (I also combined the Rotate and Scale functions into `pix_to_world()`). 
+
+I also wanted to add a weighting to the classifications based on radial distance (meaning I am more confident in the classifications of the close terrain). In order to do that, I changed `pix_to_world()` to output a 'tile' (rather than arrays of pixels). The tile is a 50x50 pixel 3 channel RGB image with the Rover centered in the tile, and the pixel classifications oriented properly.
+
+
 ### Autonomous Navigation and Mapping
 
 #### 1. Fill in the `perception_step()` (at the bottom of the `perception.py` script) and `decision_step()` (in `decision.py`) functions in the autonomous mapping scripts and an explanation is provided in the writeup of how and why these functions were modified as they were.
