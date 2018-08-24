@@ -122,7 +122,11 @@ def rover_coords(color_sel):
 def get_front_dist(obsx, obsy, scale):
     """
     Return distance to closest obstacle in front of Rover
+<<<<<<< HEAD
     Considers 1 meter wide channel in front of rover.
+=======
+    Considers 1.2 meter wide channel in front of rover.
+>>>>>>> 187180baa22aaf35ce727ba24531240331c0608c
     Takes the minimum obstacle distance.
 
     """
@@ -338,7 +342,7 @@ def perception_step(Rover):
     # Update Rover pixel distances and angles
         # Rover.nav_dists = rover_centric_pixel_distances
         # Rover.nav_angles = rover_centric_angles
-    # 
+    
 
     # Don't need to 'perceive' if picking up a rock
     if(Rover.picking_up):
@@ -383,5 +387,6 @@ def perception_step(Rover):
         # tile_blur = tile
         # Update worldmap with tile
         Rover.worldmap = update_worldmap(Rover.worldmap, Rover.worldmap_sum, tile_blur, xpos, ypos)
+
 
     return Rover

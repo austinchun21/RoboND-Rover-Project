@@ -139,9 +139,8 @@ def decision_step(Rover):
         if(Rover.near_sample and not Rover.picking_up):
             Rover.setTSB(0,0,10)
 
+
         print("  Rov Comms TSB: %.2f, %.2f, %.2f"%(Rover.throttle, Rover.steer, Rover.brake))
-
-
 
     # Just to make the rover do something 
     # even if no modifications have been made to the code
