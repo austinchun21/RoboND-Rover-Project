@@ -122,15 +122,9 @@ def rover_coords(color_sel):
 def get_front_dist(obsx, obsy, scale):
     """
     Return distance to closest obstacle in front of Rover
-<<<<<<< HEAD
-<<<<<<< HEAD
+
     Considers 1 meter wide channel in front of rover.
-=======
-    Considers 1.2 meter wide channel in front of rover.
->>>>>>> 187180baa22aaf35ce727ba24531240331c0608c
-=======
-    Considers 1.2 meter wide channel in front of rover.
->>>>>>> 187180baa22aaf35ce727ba24531240331c0608c
+
     Takes the minimum obstacle distance.
 
     """
@@ -249,12 +243,7 @@ def apply_tile_blur(tile, circle_blur):
     blur = np.multiply(tile,circle_blur).astype(np.uint8)
     return blur
 
-
-<<<<<<< HEAD
 def update_worldmap(worldmap, worldmap_sum, tile, xpos, ypos):
-=======
-def update_worldmap(worldmap, worldmap_sum, tile, xpos, ypos, roll, pitch):
->>>>>>> 187180baa22aaf35ce727ba24531240331c0608c
     """
     Given a tile of the newest observation, update the worldmap by accumulating the classifications, then
     taking the dominant class (Obstacle, Rock, or Navigable) for the update pixels.
@@ -350,15 +339,8 @@ def perception_step(Rover):
     # Update Rover pixel distances and angles
         # Rover.nav_dists = rover_centric_pixel_distances
         # Rover.nav_angles = rover_centric_angles
-<<<<<<< HEAD
     
-
     # Don't need to 'perceive' if picking up a rock
-=======
-    # 
-
-
->>>>>>> 187180baa22aaf35ce727ba24531240331c0608c
     if(Rover.picking_up):
         return Rover
 
@@ -400,11 +382,7 @@ def perception_step(Rover):
         tile_blur = apply_tile_blur(tile, cir)
         # tile_blur = tile
         # Update worldmap with tile
-<<<<<<< HEAD
         Rover.worldmap = update_worldmap(Rover.worldmap, Rover.worldmap_sum, tile_blur, xpos, ypos)
 
-=======
-        Rover.worldmap = update_worldmap(Rover.worldmap, Rover.worldmap_sum, tile_blur, xpos, ypos, Rover.roll, Rover.pitch)
->>>>>>> 187180baa22aaf35ce727ba24531240331c0608c
 
     return Rover

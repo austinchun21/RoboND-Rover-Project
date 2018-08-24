@@ -8,13 +8,8 @@ def decision_step(Rover):
     if Rover.nav_angles is not None:
 
         # des_right_dist = 4.0
-<<<<<<< HEAD
         ksteerPos = 10.0 # Turning right
         ksteerNeg = 30.0  # Turning left
-=======
-        ksteerPos = -10.0 # Turning right
-        ksteerNeg = -30.0  # Turning left
->>>>>>> 187180baa22aaf35ce727ba24531240331c0608c
         kRockSteer = 20.0
         kv = 5.0/15  # Max vel (2.0 m/s) when front_dist = 15m
         kt = 0.25/0.5   # Max accel (0.2) when Vel diff = 2.0 m/s   
@@ -27,10 +22,7 @@ def decision_step(Rover):
         print("  Right Dist: %.2f"%Rover.right_dist)
         print("  Len of angs: ", len(Rover.nav_angles))
 
-<<<<<<< HEAD
         # Move forward, following right wall
-=======
->>>>>>> 187180baa22aaf35ce727ba24531240331c0608c
         if(Rover.mode == 'forward'):
             if(Rover.front_dist < Rover.min_front_dist):
                 Rover.mode = "stop"
@@ -39,7 +31,6 @@ def decision_step(Rover):
                 Rover.mode = "stop"
                 print("     Not enough forward space")
             else:
-<<<<<<< HEAD
                 # Under usual conditions, stay des_right_dist from wall (ex 1.5m)
                 # But for narrow passages (when 1.5m from right wall is too far, and might run into left wall)
                 # aim for middle of passage (average of left and right distances)
@@ -52,24 +43,7 @@ def decision_step(Rover):
                 else:
                     Rover.steer = np.clip(ksteerNeg*steer_dif, -15, 10)
                 print("   Steer: %.3f"%Rover.steer)
-=======
-                # Check if dist is invalid
-                if(Rover.right_dist == -1):
-                    Rover.steer = np.clip(np.mean(Rover.nav_angles * 180/np.pi), -15, 15)
-                    print("   mean_steer")
-                else:
-                    # Under usual conditions, stay des_right_dist from wall (ex 1.5m)
-                    # But for narrow passages (when 1.5m from right wall is too far, and might run into left wall)
-                    # aim for middle of passage (average of left and right distances)
-                    des_dist = np.min([Rover.des_right_dist, (Rover.right_dist+Rover.left_dist)/2.0]) 
-                    steer_dif = (Rover.right_dist - des_dist) 
 
-                    if(steer_dif > 0):
-                        Rover.steer = np.clip(ksteerPos*steer_dif, -15, 10)
-                    else:
-                        Rover.steer = np.clip(ksteerNeg*steer_dif, -15, 10)
-                    print("   diff steer: %.3f"%Rover.steer)
->>>>>>> 187180baa22aaf35ce727ba24531240331c0608c
                 Rover.des_vel = np.clip(kv*(Rover.front_dist-Rover.min_front_dist), Rover.min_forward_vel, Rover.max_vel)
                 Rover.throttle = np.clip(kt * (Rover.des_vel - Rover.vel),-Rover.max_acc, Rover.max_acc)
                 print("   Des Vel: %.2f"%Rover.des_vel)
@@ -84,10 +58,7 @@ def decision_step(Rover):
 
                 Rover.brake = 0
 
-<<<<<<< HEAD
         # Rover sees a rock, so go towards it
-=======
->>>>>>> 187180baa22aaf35ce727ba24531240331c0608c
         elif(Rover.mode == 'rock'):
             # don't see any rocks
             if(len(Rover.rock_dists) == 0):
@@ -106,10 +77,7 @@ def decision_step(Rover):
 
             Rover.brake = 0
 
-<<<<<<< HEAD
         # Rover is stopped, and should turn in place until no longer blocked by obstacles
-=======
->>>>>>> 187180baa22aaf35ce727ba24531240331c0608c
         elif(Rover.mode == 'stop'):
             # If moving, brake to a stop
             if(Rover.vel > 0.2):
@@ -127,11 +95,7 @@ def decision_step(Rover):
                 else:
                     Rover.mode = 'forward'
 
-<<<<<<< HEAD
         # Rover is stuck, alternate between turning in place and going forward
-=======
-
->>>>>>> 187180baa22aaf35ce727ba24531240331c0608c
         elif(Rover.mode == 'stuck'):
             # # Turn 45 deg in place
             # if( Rover.yaw-Rover.first_stuck_angle < np.deg2rad(45)):
@@ -147,22 +111,12 @@ def decision_step(Rover):
             else:
                 Rover.setTSB(2,0,0)
 
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 187180baa22aaf35ce727ba24531240331c0608c
             # If able to move now, consider unstuck
             if( Rover.vel > 0.2):
                 Rover.mode = 'stop'
                 # Rover.just_got_stuck = False
 
 
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 187180baa22aaf35ce727ba24531240331c0608c
         # Check if stuck (must be stuck for significant time)
         if((Rover.throttle > 0.09) & (abs(Rover.vel) < 0.09) & (Rover.mode != 'stuck')):
             if(not Rover.just_got_stuck):
@@ -176,7 +130,6 @@ def decision_step(Rover):
             Rover.just_got_stuck = False
 
 
-<<<<<<< HEAD
         if(Rover.total_time < 5):
             Rover.des_vel = np.clip(kv*(Rover.front_dist-Rover.min_front_dist), Rover.min_forward_vel, Rover.max_vel)
             Rover.throttle = np.clip(kt * (Rover.des_vel - Rover.vel),-Rover.max_acc, 2*Rover.max_acc)
@@ -190,15 +143,6 @@ def decision_step(Rover):
 
         print("  Rov Comms TSB: %.2f, %.2f, %.2f"%(Rover.throttle, Rover.steer, Rover.brake))
 
-=======
-        # Stop when close to rock
-        if(Rover.near_sample and not Rover.picking_up):
-            Rover.setTSB(0,0,Rover.brake_set)
-
-        print("  Rov Comms TSB: %.2f, %.2f, %.2f"%(Rover.throttle, Rover.steer, Rover.brake))
-
-
->>>>>>> 187180baa22aaf35ce727ba24531240331c0608c
     # Just to make the rover do something 
     # even if no modifications have been made to the code
     else:
