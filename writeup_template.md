@@ -44,7 +44,10 @@ You're reading it!
 ### Notebook Analysis
 #### 1. Run the functions provided in the notebook on test images (first with the test data provided, next on data you have recorded). Add/modify functions to allow for color selection of obstacles and rock samples.
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 187180baa22aaf35ce727ba24531240331c0608c
 To detect obstacles and rocks, I added more functionality to the `color_thresh()` function. Instead of taking just navigation threshold values and outputting a 1 channel binary image of the input image, `color_thresh()` now takes in threshold values for Obstacles and Rocks, and outputs a 3 channel binary image.
 
 I also decided to use color thresholding using HSV rather than RGB. I used a low and high threshold for the HSV ranges. By specifying ranges of HSV for each class (Obs, Rock, and Nav) left some pixels unclassified (that is why there are black regions between the Red and Blue). I was relatively conservative with the color thresholding for higher confidence in the classifications. 
@@ -56,6 +59,7 @@ In the below figure, you can see the original image on the left, and the thresho
 
 #### 1. Populate the `process_image()` function with the appropriate analysis steps to map pixels identifying navigable terrain, obstacles and rock samples into a worldmap.  Run `process_image()` on your test data using the `moviepy` functions provided to create video output of your result. 
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 I adjusted `rover_coords()` and `pix_to_world()` to process the the obstacle and rock pixels just as the navigable pixels. (I also combined the Rotate and Scale functions into `pix_to_world()`). 
 
@@ -74,6 +78,11 @@ Now, with the blurred tile, the world_map must be updated. Since I wanted `data.
 A sample video output from the notebook is shown below, or can be found in `output/notebook_video.mp4`.
 
 ![gif][gif1]
+=======
+I adjusted all of the `rover_coords()` and `pix_to_world` to process the the obstalce and rock pixels just as the navigable pixels. (I also combined the Rotate and Scale functions into `pix_to_world()`). 
+
+I also wanted to add a weighting to the classifications based on radial distance (meaning I am more confident in the classifications of the close terrain). In order to do that, I changed `pix_to_world()` to output a 'tile' (rather than arrays of pixels). The tile is a 50x50 pixel 3 channel RGB image with the Rover centered in the tile, and the pixel classifications oriented properly.
+>>>>>>> 187180baa22aaf35ce727ba24531240331c0608c
 
 
 ### Autonomous Navigation and Mapping
