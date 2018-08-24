@@ -52,29 +52,33 @@ class RoverState():
         self.brake = 0 # Current brake value
         self.nav_angles = None # Angles of navigable terrain pixels
         self.nav_dists = None # Distances of navigable terrain pixels
+        self.rock_dists = None # Same, for rock
+        self.rock_angles = None # same, for rock
         self.ground_truth = ground_truth_3d # Ground truth worldmap
         self.mode = 'forward' # Current mode (can be forward or stop)
         self.throttle_set = 0.5 # Throttle setting when accelerating
-        self.brake_set = 5 # Brake setting when braking
+        self.brake_set = 1 # Brake setting when braking
         # The stop_forward and go_forward fields below represent total count
         # of navigable terrain pixels.  This is a very crude form of knowing
         # when you can keep going and when you should stop.  Feel free to
         # get creative in adding new fields or modifying these!
-        self.stop_forward = 800 # Threshold to initiate stopping
-        self.go_forward = 1000 # Threshold to go forward again
+        self.stop_forward = 500 # Threshold to initiate stopping
+        self.go_forward = 500 # Threshold to go forward again
         self.max_vel = 1.5 # Maximum velocity (meters/second)
-        self.min_forward_vel = 0.5 # When oving forward, want to actually be moving forward
+        self.min_forward_vel = 0.4 # When oving forward, want to actually be moving forward
         self.des_vel = None # Used for simple P control
-        self.max_acc = 0.2 # MAximum acceleration
+        self.max_acc = 0.3 # MAximum acceleration
 
         self.min_front_dist = 1.5 # Minimum distance in front, before stop, and back up
         self.front_dist = None # Distance to object in front of robot
-        self.des_right_dist = 1.0 # meters
+        self.des_right_dist = 1.5 # meters
         self.right_dist = None # Distance to 'right' wall (measured on right diagonal)
+        self.left_dist  = None # Distance to 'left'  wall (measured on left  diagonal)
 
         self.just_got_stuck = False # Flag to mark start time of being stuck
         self.first_stuck_time = None # Record the first stuck time (throttle > 0 and vel = 0)
-        self.time_stuck = 5.0 # How long stuck, before reversing
+        self.time_stuck = 3.0 # How long stuck, before reversing
+        self.first_stuck_angle = None # Record the angle rover first stuck in
 
         # Image output from perception step
         # Update this image to display your intermediate analysis steps
@@ -126,12 +130,15 @@ def telemetry(sid, data):
         fps = frame_counter
         frame_counter = 0
         second_counter = time.time()
-    print("Current FPS: {}".format(fps))
+    # print("Current FPS: {}".format(fps))
 
     if data:
         global Rover
         # Initialize / update Rover with current telemetry
         Rover, image = update_rover(Rover, data)
+
+        Rover.fps = fps
+
 
         if np.isfinite(Rover.vel):
 

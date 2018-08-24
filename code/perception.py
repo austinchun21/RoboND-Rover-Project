@@ -10,8 +10,8 @@ scale = 10
 
 # Create gradient blurrer
 cir = np.zeros((tile_size, tile_size, 3), dtype=float)
-cv2.circle(cir,(cir.shape[1]//2,cir.shape[0]//2), 15, color=(1,1,1), thickness=-1)
-cir = cv2.blur(cir, (20,20))#(20,20))
+cv2.circle(cir,(cir.shape[1]//2,cir.shape[0]//2), 10, color=(1,1,1), thickness=-1)
+cir = cv2.blur(cir, (10,10))#(20,20))
 
 
 def perspect_transform(img, src, dst):
@@ -32,7 +32,7 @@ def perspect_transform(img, src, dst):
     return warped
 
 
-def color_thresh(img, nav_hi=(256,70,256),nav_lo=(0,0,160),
+def color_thresh(img, nav_hi=(256,50,256),nav_lo=(0,0,190), #nav_hi=(256,70,256),nav_lo=(0,0,180),
                       obs_hi=(256,256,90),obs_lo=(0,0,0),
                       rock_hi=(40,256,256),rock_lo=(25,140,120) ):
     """
@@ -137,14 +137,26 @@ def get_right_dist(ang_nav, dist_nav, scale):
     """
     Return right distance along right diagonal (~45 degrees)
     """ 
-    right_inds = ang_nav < np.deg2rad(-45)
+    right_inds = ang_nav < np.deg2rad(-40)
 
     if(np.any(right_inds)):
         mean_right_dist = np.mean(dist_nav[right_inds]) / scale # Account for pixel scale
         return mean_right_dist 
     else:
-        print("No navigable terrain to the right!")
         return 0
+
+def get_left_dist(ang_nav, dist_nav, scale):
+    """
+    Return left distance along left diagonal (~45 degrees)
+    """ 
+    left_inds = ang_nav > np.deg2rad(40)
+
+    if(np.any(left_inds)):
+        mean_left_dist = np.mean(dist_nav[left_inds]) / scale # Account for pixel scale
+        return mean_left_dist 
+    else:
+        return 0
+
 
 def to_polar_coords(x_pixel, y_pixel):
     """
@@ -210,7 +222,7 @@ def pix_to_world(navx, navy, obsx, obsy, rockx, rocky, xpos, ypos, yaw, scale, t
     # Create tile (custom, hard-coded weights for classifications)
     tile = np.zeros((tile_size, tile_size, 3),dtype=np.uint8)
     tile[ny,nx,2] = 10
-    tile[oy,ox,0] = 4
+    tile[oy,ox,0] = 10
     tile[ry,rx,1] = 255 # Don't see rocks often, so weight it higher to not miss it
 
     return tile
@@ -242,10 +254,6 @@ def update_worldmap(worldmap, worldmap_sum, tile, xpos, ypos, roll, pitch):
     Returns:
         worldmap:      Newly adjust classifications of the given region of interest
     """
-
-    # Only update, if roll and pitch are good
-    if( (abs(roll-180) < 179) | (abs(pitch-180) < 179) ):
-        return worldmap
 
     # Constants
     tile_size = tile.shape[0]
@@ -331,6 +339,11 @@ def perception_step(Rover):
         # Rover.nav_dists = rover_centric_pixel_distances
         # Rover.nav_angles = rover_centric_angles
     # 
+
+
+    if(Rover.picking_up):
+        return Rover
+
     # Constants for perspective transform
     dst_size = 5 # The destination box will be 2*dst_size on each side
     bottom_offset = 6 # Account 
@@ -341,7 +354,6 @@ def perception_step(Rover):
                       [Rover.img.shape[1]/2 - dst_size, Rover.img.shape[0] - 2*dst_size - bottom_offset],
                       ])
 
- 
     xpos, ypos = Rover.pos
     yaw = Rover.yaw
 
@@ -353,22 +365,23 @@ def perception_step(Rover):
     navx, navy, obsx, obsy, rockx, rocky = rover_coords(col_sel)
     Rover.nav_dists, Rover.nav_angles = to_polar_coords(navx, navy)
 
+    Rover.rock_dists, Rover.rock_angles = to_polar_coords(rockx, rocky)
+
     # Only update dists if driving flat
     # if( (abs(Rover.roll-180) > 178.5) ):
     if (abs(Rover.pitch-180) > 179 ):
         Rover.front_dist = get_front_dist(obsx, obsy, scale)
         Rover.right_dist = get_right_dist(Rover.nav_angles, Rover.nav_dists, scale)
+        Rover.left_dist  = get_left_dist (Rover.nav_angles, Rover.nav_dists, scale)
 
-    print("Front Dist: %.2f"%Rover.front_dist)
-    print("Right Dist: %.2f"%Rover.right_dist)
-
-
-    # Extract world coordinates of navigable, obstacle, and rock
-    tile = pix_to_world(navx, navy, obsx, obsy, rockx, rocky, xpos, ypos, yaw, scale, tile_size)
-    # Blur tile
-    tile_blur = apply_tile_blur(tile, cir)
-    # tile_blur = tile
-    # Update worldmap with tile
-    Rover.worldmap = update_worldmap(Rover.worldmap, Rover.worldmap_sum, tile_blur, xpos, ypos, Rover.roll, Rover.pitch)
+    # Only update map if actually moving (don't keep updating when stationary) and flat (not tilted)
+    if( (abs(Rover.vel) > 0.09) & (abs(Rover.roll-180) > 179) & (abs(Rover.pitch-180) > 179) ):
+        # Extract world coordinates of navigable, obstacle, and rock
+        tile = pix_to_world(navx, navy, obsx, obsy, rockx, rocky, xpos, ypos, yaw, scale, tile_size)
+        # Blur tile
+        tile_blur = apply_tile_blur(tile, cir)
+        # tile_blur = tile
+        # Update worldmap with tile
+        Rover.worldmap = update_worldmap(Rover.worldmap, Rover.worldmap_sum, tile_blur, xpos, ypos, Rover.roll, Rover.pitch)
 
     return Rover
